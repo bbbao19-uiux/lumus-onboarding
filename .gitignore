@@ -1,0 +1,16 @@
+# Local Claude settings
+.claude/settings.local.json
+
+# Dependencies & build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
