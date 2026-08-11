@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumus Design System · Colors</title>
+<link rel="stylesheet" href="./colors.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, -apple-system, system-ui, sans-serif; background: var(--bg-primary);
+    color: var(--text-primary); transition: background .2s, color .2s; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 32px 96px; }
+  header h1 { font-size: 34px; font-weight: 800; letter-spacing: -.6px; }
+  header p { font-size: 14px; color: var(--text-tertiary); margin-top: 4px; }
+
+  /* Tabs */
+  .tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; margin: 24px 0 8px;
+    padding: 6px; background: var(--bg-secondary); border: 1px solid var(--border-secondary);
+    border-radius: 12px; width: fit-content; }
+  .tab { padding: 9px 18px; border: none; background: transparent; color: var(--text-tertiary);
+    font: 600 14px Inter; border-radius: 8px; cursor: pointer; transition: all .15s; }
+  .tab:hover { color: var(--text-secondary); }
+  .tab.active { background: var(--bg-primary); color: var(--text-primary);
+    box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--border-secondary); }
+  .tab .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+  .panel { display: none; margin-top: 20px; }
+  .panel.active { display: block; }
+
+  h2 { font-size: 20px; font-weight: 700; margin: 34px 0 3px; }
+  h2:first-child { margin-top: 8px; }
+  .muted { font-size: 12px; color: var(--text-quaternary); margin-bottom: 14px; }
+
+  /* Primitive ramps */
+  .ramp { display: grid; grid-template-columns: 150px repeat(12, 1fr); gap: 6px; align-items: center; margin-bottom: 6px; }
+  .ramp .name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .sw { height: 46px; border-radius: 7px; border: 1px solid var(--border-secondary);
+    display: flex; align-items: flex-end; padding: 3px 5px; }
+  .sw span { font-size: 9px; color: rgba(255,255,255,.9); mix-blend-mode: difference; }
+  .sw.na { border-style: dashed; background: transparent !important; }
+
+  /* Semantic tables */
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--text-quaternary); font-weight: 700; padding: 8px 12px; border-bottom: 1px solid var(--border-secondary); }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border-secondary); font-size: 13px; vertical-align: middle; }
+  td.swcell { width: 44px; }
+  td.swcell i { display: block; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--border-secondary); }
+  .tok { font-weight: 600; font-family: ui-monospace, monospace; }
+  .alias { color: var(--text-tertiary); font-family: ui-monospace, monospace; font-size: 12px; }
+  .alias.sem { color: var(--fg-brand-primary); }
+  .hex { color: var(--text-tertiary); font-family: ui-monospace, monospace; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lumus Design System — Colors</h1>
+    <p>Sinh trực tiếp từ Figma DTCG tokens (Base + Light + Dark). Primitive → semantic, ánh xạ theo mode.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="primitives" data-theme-set="light">Primitives</button>
+    <button class="tab" data-tab="light" data-theme-set="light"><span class="dot" style="background:#fff;border:1px solid #d5d7da"></span>Light mode</button>
+    <button class="tab" data-tab="dark" data-theme-set="dark"><span class="dot" style="background:#0c0e12"></span>Dark mode</button>
+  </div>
+
+  <section class="panel active" id="panel-primitives"></section>
+  <section class="panel" id="panel-light"></section>
+  <section class="panel" id="panel-dark"></section>
+</div>
+
+<script type="module">
+  import { primitives, groups, steps, semantic } from './colors.js';
+
+  /* ---------- Primitives ---------- */
+  const pPanel = document.getElementById('panel-primitives');
+  function ramp(fam) {
+    const scale = primitives[fam];
+    const cells = steps.map(s => scale[s]
+      ? `<div class="sw" style="background:${scale[s]}"><span>${s}</span></div>`
+      : `<div class="sw na"></div>`).join('');
+    return `<div class="ramp"><div class="name">${fam}</div>${cells}</div>`;
+  }
+  const baseCells = Object.entries(primitives.base)
+    .map(([k,hex]) => `<div class="sw" style="background:${hex}"><span>${k}</span></div>`).join('');
+  pPanel.innerHTML =
+    `<h2>Base</h2><div class="muted">white · black · transparent</div>
+     <div class="ramp"><div class="name">base</div>${baseCells}</div>
+     <h2>Primary</h2><div class="muted">${groups.primary.length} families</div>
+     ${groups.primary.map(ramp).join('')}
+     <h2>Secondary</h2><div class="muted">${groups.secondary.length} families</div>
+     ${groups.secondary.map(ramp).join('')}`;
+
+  /* ---------- Semantic (Light / Dark) ---------- */
+  function aliasLabel(m) {
+    if (!m) return '—';
+    if (m.semAlias) return `→ ${m.semAlias}`;
+    if (m.alias) return `${m.alias.family}/${m.alias.step}`;
+    return '(raw)';
+  }
+  function renderSemantic(panelId, mode) {
+    const panel = document.getElementById(panelId);
+    let html = '';
+    for (const [group, tokens] of Object.entries(semantic)) {
+      const rows = Object.entries(tokens).map(([name, m]) => `
+        <tr>
+          <td class="swcell"><i style="background:var(--${name})"></i></td>
+          <td class="tok">${name}</td>
+          <td class="alias ${m[mode]?.semAlias ? 'sem' : ''}">${aliasLabel(m[mode])}</td>
+          <td class="hex">${m[mode]?.hex || '—'}</td>
+        </tr>`).join('');
+      html += `<h2>${group}</h2><div class="muted">${Object.keys(tokens).length} tokens</div>
+        <table><thead><tr><th class="swcell"></th><th>Variable</th><th>Alias</th><th>Value (${mode})</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+    }
+    panel.innerHTML = html;
+  }
+  renderSemantic('panel-light', 'light');
+  renderSemantic('panel-dark', 'dark');
+
+  /* ---------- Tabs ---------- */
+  const tabs = [...document.querySelectorAll('.tab')];
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    document.documentElement.setAttribute('data-theme', tab.dataset.themeSet);
+  }));
+</script>
+</body>
+</html>
