@@ -15,6 +15,7 @@ dist/
 Thumbs.db
 .DS_Store
 
-# Local source/build artifacts (large bundled source, one-off transform script)
+# Local source/build artifacts (large bundled source, one-off transform scripts)
 coming-soon.html
 patch-404.mjs
+patch-403.mjs
