@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runtime tokens · demo</title>
+<!-- NOTE: no colors.css here — tokens are loaded at runtime from tokens.json -->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--bg-primary, #fff);
+    color: var(--text-primary, #111); transition: background .2s, color .2s; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 48px 28px; }
+  h1 { font-size: 26px; font-weight: 800; }
+  p.lead { color: var(--text-tertiary); margin: 6px 0 22px; font-size: 14px; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+  button, .seg { font: 600 13px Inter; border-radius: 9999px; cursor: pointer; padding: 9px 16px;
+    border: 1px solid var(--border-primary); background: var(--bg-secondary); color: var(--text-secondary); }
+  .status { font-size: 12.5px; color: var(--text-tertiary); }
+  .status b { color: var(--fg-success-primary); }
+  .card { border: 1px solid var(--border-secondary); background: var(--bg-secondary); border-radius: 14px; padding: 20px; margin-bottom: 14px; }
+  .card h3 { font-size: 15px; margin-bottom: 4px; }
+  .card p { font-size: 13px; color: var(--text-tertiary); }
+  .btns { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-primary { background: var(--bg-brand-solid); color: var(--text-white); border: none; }
+  .btn-secondary { background: var(--bg-primary); color: var(--text-secondary); border: 1px solid var(--border-primary); }
+  .swatches { display: flex; gap: 8px; margin-top: 12px; }
+  .swatches i { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border-secondary); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Runtime tokens — demo</h1>
+  <p class="lead">Trang này <b>không</b> nhúng <code>colors.css</code>. Toàn bộ màu được nạp lúc chạy từ <code>tokens.json</code> qua <code>tokens-runtime.js</code>. Sửa <code>tokens.json</code> → bấm Reload (hoặc bật Live poll) là đổi màu, <b>không cần build/redeploy</b>.</p>
+
+  <div class="bar">
+    <span class="seg" id="theme">🌙 Chuyển Dark</span>
+    <button id="reload">↻ Reload tokens</button>
+    <button id="live">▶ Live poll: off</button>
+    <span class="status" id="status">đang nạp…</span>
+  </div>
+
+  <div class="card">
+    <h3>Card mẫu</h3>
+    <p>Dùng bg-secondary + border-secondary + text-tertiary. Nút dưới dùng bg-brand-solid / border-primary.</p>
+    <div class="btns">
+      <button class="btn-primary">Primary</button>
+      <button class="btn-secondary">Secondary</button>
+    </div>
+    <div class="swatches">
+      <i style="background:var(--bg-brand-solid)"></i>
+      <i style="background:var(--fg-success-primary)"></i>
+      <i style="background:var(--fg-error-primary)"></i>
+      <i style="background:var(--fg-warning-primary)"></i>
+    </div>
+  </div>
+
+<script type="module">
+  import { loadTokens, watchTokens } from './tokens-runtime.js';
+  const status = document.getElementById('status');
+  const stamp = () => new Date().toLocaleTimeString();
+
+  async function apply(reason) {
+    try { await loadTokens('./tokens.json'); status.innerHTML = `<b>✓ tokens áp dụng</b> — ${reason} @ ${stamp()}`; }
+    catch (e) { status.textContent = 'lỗi nạp tokens: ' + e.message; }
+  }
+  await apply('lần đầu');
+
+  document.getElementById('reload').onclick = () => apply('reload thủ công');
+
+  document.getElementById('theme').onclick = (e) => {
+    const dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    e.target.textContent = dark ? '☀️ Chuyển Light' : '🌙 Chuyển Dark';
+  };
+
+  let stop = null;
+  document.getElementById('live').onclick = (e) => {
+    if (stop) { stop(); stop = null; e.target.textContent = '▶ Live poll: off'; }
+    else { stop = watchTokens('./tokens.json', 2000, () => status.innerHTML = `<b>✓ tokens tự cập nhật</b> @ ${stamp()}`);
+           e.target.textContent = '⏸ Live poll: on (2s)'; }
+  };
+</script>
+</body>
+</html>

@@ -3,131 +3,396 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lumus Design System · Colors</title>
+<title>Lumus Design System · Token editor</title>
 <link rel="stylesheet" href="./colors.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Inter, -apple-system, system-ui, sans-serif; background: var(--bg-primary);
-    color: var(--text-primary); transition: background .2s, color .2s; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 32px 96px; }
-  header h1 { font-size: 34px; font-weight: 800; letter-spacing: -.6px; }
+  body { font-family: Inter, -apple-system, system-ui, sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+  .wrap { max-width: 1260px; margin: 0 auto; padding: 36px 32px 96px; }
+  header h1 { font-size: 32px; font-weight: 800; letter-spacing: -.6px; }
   header p { font-size: 14px; color: var(--text-tertiary); margin-top: 4px; }
 
-  /* Tabs */
-  .tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; margin: 24px 0 8px;
-    padding: 6px; background: var(--bg-secondary); border: 1px solid var(--border-secondary);
-    border-radius: 12px; width: fit-content; }
-  .tab { padding: 9px 18px; border: none; background: transparent; color: var(--text-tertiary);
-    font: 600 14px Inter; border-radius: 8px; cursor: pointer; transition: all .15s; }
-  .tab:hover { color: var(--text-secondary); }
-  .tab.active { background: var(--bg-primary); color: var(--text-primary);
-    box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--border-secondary); }
-  .tab .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+  .toolbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; align-items: center;
+    padding: 12px 0; background: var(--bg-primary); border-bottom: 1px solid var(--border-secondary); margin: 16px 0 4px; flex-wrap: wrap; }
+  .tabs { display: flex; gap: 4px; padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-secondary); border-radius: 11px; }
+  .tab { padding: 8px 16px; border: none; background: transparent; color: var(--text-tertiary); font: 600 13.5px Inter; border-radius: 8px; cursor: pointer; }
+  .tab.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--border-secondary); }
+  .spacer { flex: 1; }
+  .btn { font: 600 13px Inter; border-radius: 9px; cursor: pointer; padding: 9px 15px; border: 1px solid var(--border-primary); background: var(--bg-secondary); color: var(--text-secondary); }
+  .btn.primary { background: var(--bg-brand-solid); color: var(--text-white); border: none; }
+  .btn.editing { background: var(--bg-warning-solid); color: var(--text-white); border: none; }
+  .dirty { font-size: 12px; color: var(--fg-warning-primary); }
+  .badge { font: 700 11px Inter; background: var(--bg-quaternary); color: var(--text-tertiary); border-radius: 9999px; padding: 2px 9px; }
 
-  .panel { display: none; margin-top: 20px; }
+  /* Read-only (view) mode: inputs visible but locked */
+  body:not(.editing) .cell input.hex,
+  body:not(.editing) .editcell input.ref { pointer-events: none; }
+  body:not(.editing) .cell input[type=color],
+  body:not(.editing) .editcell input[type=color] { pointer-events: none; opacity: .55; }
+  body:not(.editing) .cell, body:not(.editing) .editcell { cursor: default; }
+  body.editing .cell input.hex, body.editing .editcell input.ref { cursor: text; }
+  body.editing .cell, body.editing .editcell { box-shadow: 0 0 0 1px var(--border-brand) inset; }
+
+  /* Log tab */
+  .logrow { display: grid; grid-template-columns: 150px 90px 200px 1fr 90px; gap: 10px; align-items: center;
+    padding: 9px 12px; border-bottom: 1px solid var(--border-secondary); font-size: 12.5px; }
+  .logrow.head { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-quaternary); font-weight: 700; }
+  .logrow .ts { color: var(--text-tertiary); font-family: ui-monospace, monospace; font-size: 11.5px; }
+  .logrow .tok { font-family: ui-monospace, monospace; font-weight: 600; }
+  .logrow .change { display: flex; align-items: center; gap: 6px; font-family: ui-monospace, monospace; }
+  .logrow .change .old { color: var(--text-quaternary); text-decoration: line-through; }
+  .logrow .change .new { color: var(--text-primary); font-weight: 600; }
+  .logrow .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--border-secondary); display: inline-block; vertical-align: -2px; }
+  .empty-log { padding: 30px 12px; color: var(--text-quaternary); font-size: 13px; text-align: center; }
+
+  .panel { display: none; margin-top: 18px; }
   .panel.active { display: block; }
+  h2 { font-size: 19px; font-weight: 700; margin: 30px 0 3px; }
+  h2:first-child { margin-top: 6px; }
+  .muted { font-size: 12px; color: var(--text-quaternary); margin-bottom: 12px; }
 
-  h2 { font-size: 20px; font-weight: 700; margin: 34px 0 3px; }
-  h2:first-child { margin-top: 8px; }
-  .muted { font-size: 12px; color: var(--text-quaternary); margin-bottom: 14px; }
+  /* Primitives — editable ramps */
+  .ramp { display: grid; grid-template-columns: 160px repeat(12, 1fr); gap: 6px; align-items: start; margin-bottom: 10px; }
+  .ramp .name { font-size: 12px; font-weight: 600; color: var(--text-secondary); padding-top: 14px; }
+  .cell { display: flex; flex-direction: column; gap: 3px; }
+  .cell.empty { visibility: hidden; }
+  .cell input[type=color] { width: 100%; height: 42px; padding: 0; border: 1px solid var(--border-secondary); border-radius: 7px; background: none; cursor: pointer; }
+  .cell .step { font-size: 9.5px; color: var(--text-quaternary); text-align: center; }
+  .cell input.hex { width: 100%; font: 500 9.5px ui-monospace, monospace; text-align: center; border: 1px solid var(--border-secondary); border-radius: 5px; padding: 2px; color: var(--text-secondary); background: var(--bg-primary); text-transform: uppercase; }
 
-  /* Primitive ramps */
-  .ramp { display: grid; grid-template-columns: 150px repeat(12, 1fr); gap: 6px; align-items: center; margin-bottom: 6px; }
-  .ramp .name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-  .sw { height: 46px; border-radius: 7px; border: 1px solid var(--border-secondary);
-    display: flex; align-items: flex-end; padding: 3px 5px; }
-  .sw span { font-size: 9px; color: rgba(255,255,255,.9); mix-blend-mode: difference; }
-  .sw.na { border-style: dashed; background: transparent !important; }
-
-  /* Semantic tables */
+  /* Semantic — editable unified table */
   table { width: 100%; border-collapse: collapse; }
-  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--text-quaternary); font-weight: 700; padding: 8px 12px; border-bottom: 1px solid var(--border-secondary); }
-  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border-secondary); font-size: 13px; vertical-align: middle; }
-  td.swcell { width: 44px; }
-  td.swcell i { display: block; width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--border-secondary); }
-  .tok { font-weight: 600; font-family: ui-monospace, monospace; }
-  .alias { color: var(--text-tertiary); font-family: ui-monospace, monospace; font-size: 12px; }
-  .alias.sem { color: var(--fg-brand-primary); }
-  .hex { color: var(--text-tertiary); font-family: ui-monospace, monospace; text-transform: uppercase; }
+  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-quaternary); font-weight: 700; padding: 9px 12px; border-bottom: 1px solid var(--border-secondary); }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border-secondary); font-size: 13px; vertical-align: middle; }
+  .tok { font-weight: 600; font-family: ui-monospace, monospace; white-space: nowrap; }
+  .usage { color: var(--text-secondary); font-size: 12.5px; line-height: 1.4; max-width: 300px; }
+  th.mode, td.mode { width: 250px; }
+
+  .editcell { display: flex; align-items: center; gap: 7px; padding: 4px 8px 4px 5px; border-radius: 9999px; border: 1px solid var(--border-secondary); }
+  .editcell.light { background: #fafafa; }
+  .editcell.dark { background: #13161b; }
+  .editcell input[type=color] { width: 26px; height: 26px; padding: 0; border: none; border-radius: 6px; background: none; cursor: pointer; flex: 0 0 auto; }
+  .editcell input.ref { flex: 1; min-width: 0; border: none; background: transparent; font: 500 12px ui-monospace, monospace; outline: none; }
+  .editcell.light input.ref { color: #181d27; }
+  .editcell.dark input.ref { color: #f0f0f1; }
+  .editcell.isref .ref { }         /* referencing a token */
+  .editcell.ishex .ref { }         /* raw hex */
+  .kindtag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 6px; flex: 0 0 auto; }
+  .editcell.light .kindtag { background: #e9eaeb; color: #535862; }
+  .editcell.dark .kindtag { background: #22262f; color: #94979c; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Lumus Design System — Colors</h1>
-    <p>Sinh trực tiếp từ Figma DTCG tokens (Base + Light + Dark). Primitive → semantic, ánh xạ theo mode.</p>
+    <h1>Lumus Design System — Token editor</h1>
+    <p>Bấm <b>"Bật chỉnh sửa"</b> để mở khoá: <b>Primitive</b> = mã hex · <b>Semantic</b> = tham chiếu Primitive (gõ tên biến, có gợi ý) hoặc nhập <code>#hex</code>. Mọi thay đổi được ghi vào tab <b>Log</b> kèm ngày giờ.</p>
   </header>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="primitives" data-theme-set="light">Primitives</button>
-    <button class="tab" data-tab="light" data-theme-set="light"><span class="dot" style="background:#fff;border:1px solid #d5d7da"></span>Light mode</button>
-    <button class="tab" data-tab="dark" data-theme-set="dark"><span class="dot" style="background:#0c0e12"></span>Dark mode</button>
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab active" data-tab="primitives">Primitives</button>
+      <button class="tab" data-tab="semantic">Semantic (Light + Dark)</button>
+      <button class="tab" data-tab="log">Log <span class="badge" id="logCount">0</span></button>
+    </div>
+    <span class="dirty" id="dirty"></span>
+    <span class="spacer"></span>
+    <button class="btn" id="toggleEdit">🔒 Bật chỉnh sửa</button>
+    <button class="btn" id="reset">Reset về gốc</button>
+    <button class="btn" id="export">⬇ Export tokens.json</button>
+    <button class="btn primary" id="save">💾 Lưu vào file</button>
   </div>
 
   <section class="panel active" id="panel-primitives"></section>
-  <section class="panel" id="panel-light"></section>
-  <section class="panel" id="panel-dark"></section>
+  <section class="panel" id="panel-semantic"></section>
+  <section class="panel" id="panel-log"></section>
 </div>
+
+<datalist id="varlist"></datalist>
 
 <script type="module">
   import { primitives, groups, steps, semantic } from './colors.js';
+  import { usage } from './usage.js';
 
-  /* ---------- Primitives ---------- */
-  const pPanel = document.getElementById('panel-primitives');
-  function ramp(fam) {
-    const scale = primitives[fam];
-    const cells = steps.map(s => scale[s]
-      ? `<div class="sw" style="background:${scale[s]}"><span>${s}</span></div>`
-      : `<div class="sw na"></div>`).join('');
-    return `<div class="ramp"><div class="name">${fam}</div>${cells}</div>`;
-  }
-  const baseCells = Object.entries(primitives.base)
-    .map(([k,hex]) => `<div class="sw" style="background:${hex}"><span>${k}</span></div>`).join('');
-  pPanel.innerHTML =
-    `<h2>Base</h2><div class="muted">white · black · transparent</div>
-     <div class="ramp"><div class="name">base</div>${baseCells}</div>
-     <h2>Primary</h2><div class="muted">${groups.primary.length} families</div>
-     ${groups.primary.map(ramp).join('')}
-     <h2>Secondary</h2><div class="muted">${groups.secondary.length} families</div>
-     ${groups.secondary.map(ramp).join('')}`;
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const STORAGE = 'lumus-token-edits-v1';
+  const LOG_STORAGE = 'lumus-token-log-v1';
 
-  /* ---------- Semantic (Light / Dark) ---------- */
-  function aliasLabel(m) {
-    if (!m) return '—';
-    if (m.semAlias) return `→ ${m.semAlias}`;
-    if (m.alias) return `${m.alias.family}/${m.alias.step}`;
-    return '(raw)';
+  // ---- edit mode gate ----
+  let EDITING = false;
+  function setEditing(on) {
+    EDITING = on;
+    document.body.classList.toggle('editing', on);
+    const btn = document.getElementById('toggleEdit');
+    btn.textContent = on ? '✏️ Đang chỉnh sửa — bấm để khoá' : '🔒 Bật chỉnh sửa';
+    btn.classList.toggle('editing', on);
   }
-  function renderSemantic(panelId, mode) {
-    const panel = document.getElementById(panelId);
-    let html = '';
+
+  // ---- change log ----
+  let LOG = [];
+  function loadLog() { try { LOG = JSON.parse(localStorage.getItem(LOG_STORAGE)) || []; } catch { LOG = []; } }
+  function saveLog() { localStorage.setItem(LOG_STORAGE, JSON.stringify(LOG)); renderLogBadge(); }
+  function addLog(entry) {
+    LOG.unshift({ ts: new Date().toISOString(), ...entry });
+    saveLog();
+    if (document.getElementById('panel-log').classList.contains('active')) renderLog();
+  }
+  function renderLogBadge() { document.getElementById('logCount').textContent = LOG.length; }
+  function fmtTs(iso) {
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function renderLog() {
+    const el = document.getElementById('panel-log');
+    if (!LOG.length) { el.innerHTML = `<div class="empty-log">Chưa có thay đổi nào được ghi lại.</div>`; return; }
+    const rows = LOG.map(l => `
+      <div class="logrow">
+        <span class="ts">${fmtTs(l.ts)}</span>
+        <span>${l.scope}</span>
+        <span class="tok">${l.name}</span>
+        <span class="change">
+          <span class="swatch" style="background:${l.oldResolved || l.oldValue}"></span>
+          <span class="old">${l.oldValue}</span>
+          →
+          <span class="swatch" style="background:${l.newResolved || l.newValue}"></span>
+          <span class="new">${l.newValue}</span>
+        </span>
+        <span>${l.mode || ''}</span>
+      </div>`).join('');
+    el.innerHTML = `<h2>Lịch sử thay đổi</h2><div class="muted">${LOG.length} thay đổi — mới nhất trước, lưu ở trình duyệt (localStorage)</div>
+      <div class="logrow head"><span>Thời gian</span><span>Loại</span><span>Token</span><span>Thay đổi</span><span>Mode</span></div>
+      ${rows}
+      <div style="margin-top:14px"><button class="btn" id="clearLog">Xoá lịch sử</button></div>`;
+    document.getElementById('clearLog').onclick = () => { if (confirm('Xoá toàn bộ lịch sử thay đổi?')) { LOG = []; saveLog(); renderLog(); } };
+  }
+
+  // ---- editable state ----
+  // P: family -> step -> hex ; S: token -> { light:entry, dark:entry }
+  // entry = { kind:'ref', ref:'--color-...'|'--token' }  |  { kind:'hex', hex:'#rrggbb' }
+  let P, S;
+  const semOrder = {};                    // group -> [token]
+  function initState() {
+    P = clone(primitives);
+    S = {};
     for (const [group, tokens] of Object.entries(semantic)) {
-      const rows = Object.entries(tokens).map(([name, m]) => `
-        <tr>
-          <td class="swcell"><i style="background:var(--${name})"></i></td>
-          <td class="tok">${name}</td>
-          <td class="alias ${m[mode]?.semAlias ? 'sem' : ''}">${aliasLabel(m[mode])}</td>
-          <td class="hex">${m[mode]?.hex || '—'}</td>
-        </tr>`).join('');
-      html += `<h2>${group}</h2><div class="muted">${Object.keys(tokens).length} tokens</div>
-        <table><thead><tr><th class="swcell"></th><th>Variable</th><th>Alias</th><th>Value (${mode})</th></tr></thead>
-        <tbody>${rows}</tbody></table>`;
+      semOrder[group] = Object.keys(tokens);
+      for (const [tok, m] of Object.entries(tokens)) {
+        S[tok] = { light: entryFrom(m.light), dark: entryFrom(m.dark) };
+      }
     }
-    panel.innerHTML = html;
   }
-  renderSemantic('panel-light', 'light');
-  renderSemantic('panel-dark', 'dark');
+  function entryFrom(md) {
+    if (!md) return { kind: 'hex', hex: '#000000' };
+    if (md.alias) return { kind: 'ref', ref: `--color-${md.alias.family}-${md.alias.step}` };
+    if (md.semAlias) return { kind: 'ref', ref: `--${md.semAlias}` };
+    return { kind: 'hex', hex: md.hex };
+  }
 
-  /* ---------- Tabs ---------- */
-  const tabs = [...document.querySelectorAll('.tab')];
-  tabs.forEach(tab => tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
+  // ---- var lookup + resolution ----
+  const primVarName = (fam, step) => `--color-${fam}-${step}`;
+  function primHexByVar() {
+    const map = {};
+    for (const [fam, scale] of Object.entries(P)) for (const [step, hex] of Object.entries(scale)) map[primVarName(fam, step)] = hex;
+    return map;
+  }
+  let PVMAP = {};
+  function resolveEntry(entry, mode, depth = 0) {
+    if (!entry || depth > 12) return '#000000';
+    if (entry.kind === 'hex') return entry.hex;
+    const ref = entry.ref;
+    if (PVMAP[ref] != null) return PVMAP[ref];               // primitive
+    if (ref && ref.startsWith('--')) {                        // semantic ref
+      const tok = ref.slice(2);
+      if (S[tok]) return resolveEntry(S[tok][mode], mode, depth + 1);
+    }
+    return '#000000';
+  }
+
+  // ---- live apply (override CSS vars) ----
+  function applyStyle() {
+    PVMAP = primHexByVar();
+    const refOrHex = (e) => e.kind === 'hex' ? e.hex : `var(${e.ref})`;
+    let light = '', dark = '';
+    for (const [v, hex] of Object.entries(PVMAP)) light += `${v}:${hex};`;
+    for (const tok of Object.keys(S)) { light += `--${tok}:${refOrHex(S[tok].light)};`; dark += `--${tok}:${refOrHex(S[tok].dark)};`; }
+    let el = document.getElementById('lumus-edits');
+    if (!el) { el = document.createElement('style'); el.id = 'lumus-edits'; document.head.appendChild(el); }
+    // :root:root / :root:root[data-theme=dark] raise specificity above colors.css
+    el.textContent = `:root:root{${light}}:root:root[data-theme="dark"]{${dark}}`;
+  }
+
+  // ---- persistence ----
+  function markDirty() { document.getElementById('dirty').textContent = '● có thay đổi chưa lưu'; localStorage.setItem(STORAGE, JSON.stringify({ P, S })); }
+  function loadDraft() { try { const d = JSON.parse(localStorage.getItem(STORAGE)); if (d?.P && d?.S) { P = d.P; S = d.S; return true; } } catch {} return false; }
+
+  // ---- datalist of referenceable vars ----
+  function buildVarlist() {
+    const dl = document.getElementById('varlist');
+    const prim = Object.keys(primHexByVar());
+    const sem = Object.keys(S).map(t => `--${t}`);
+    dl.innerHTML = [...prim, ...sem].map(v => `<option value="${v}">`).join('');
+  }
+
+  const isHex = (s) => /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(s.trim());
+  const shortAlias = (ref) => ref
+    .replace('--color-gray-dark-mode-alpha-', 'gray-alpha-')
+    .replace('--color-gray-light-mode-', 'gray-')
+    .replace('--color-gray-dark-mode-', 'gray-')
+    .replace('--color-', '')
+    .replace(/^--/, '→ ');
+
+  /* ============================ Primitives ============================ */
+  function renderPrimitives() {
+    const el = document.getElementById('panel-primitives');
+    const fams = ['base', ...groups.primary, ...groups.secondary];
+    el.innerHTML = fams.map(fam => {
+      const scale = P[fam];
+      const cols = fam === 'base'
+        ? Object.keys(scale)
+        : steps;
+      const cells = cols.map(step => {
+        const hex = scale[step];
+        if (hex == null) return `<div class="cell empty"></div>`;
+        return `<div class="cell" data-fam="${fam}" data-step="${step}">
+          <input type="color" value="${hex.slice(0,7)}">
+          <div class="step">${step}</div>
+          <input class="hex" value="${hex.toUpperCase()}">
+        </div>`;
+      }).join('');
+      const grid = fam === 'base' ? `grid-template-columns:160px repeat(${cols.length},1fr)` : '';
+      return `<div class="ramp" style="${grid}"><div class="name">${fam}</div>${cells}</div>`;
+    }).join('');
+
+    el.querySelectorAll('.cell').forEach(cell => {
+      const { fam, step } = cell.dataset;
+      const color = cell.querySelector('input[type=color]');
+      const hexIn = cell.querySelector('input.hex');
+      const set = (val) => {
+        if (!EDITING || !isHex(val)) { color.value = P[fam][step].slice(0,7); hexIn.value = P[fam][step].toUpperCase(); return; }
+        const before = P[fam][step];
+        const after = val.toLowerCase();
+        P[fam][step] = after; color.value = after.slice(0,7); hexIn.value = after.toUpperCase();
+        applyStyle(); markDirty();
+        if (before !== after) addLog({ scope: 'Primitive', name: `${fam}-${step}`, mode: '', oldValue: before.toUpperCase(), newValue: after.toUpperCase() });
+      };
+      color.addEventListener('input', () => { if (EDITING) { P[fam][step] = color.value; applyStyle(); } });
+      color.addEventListener('change', () => { set(color.value); });
+      hexIn.addEventListener('change', () => set(hexIn.value));
+    });
+  }
+
+  /* ============================ Semantic ============================ */
+  function renderSemantic() {
+    const el = document.getElementById('panel-semantic');
+    let html = '';
+    for (const [group, toks] of Object.entries(semOrder)) {
+      const rows = toks.map(tok => `
+        <tr data-tok="${tok}">
+          <td class="tok">${tok}</td>
+          <td class="mode">${cellHtml(tok, 'light')}</td>
+          <td class="mode">${cellHtml(tok, 'dark')}</td>
+          <td class="usage">${usage[tok] || ''}</td>
+        </tr>`).join('');
+      html += `<h2>${group}</h2><div class="muted">${toks.length} tokens</div>
+        <table><thead><tr><th>Name</th><th class="mode">Light mode</th><th class="mode">Dark mode</th><th>Usage</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.editcell').forEach(wireCell);
+  }
+  function cellHtml(tok, mode) {
+    const e = S[tok][mode];
+    const hex = resolveEntry(e, mode);
+    const val = e.kind === 'hex' ? e.hex.toUpperCase() : e.ref;
+    const tag = e.kind === 'hex' ? 'HEX' : (PVMAP[e.ref] != null ? 'REF' : 'SEM');
+    return `<div class="editcell ${mode} ${e.kind==='hex'?'ishex':'isref'}" data-tok="${tok}" data-mode="${mode}">
+      <input type="color" value="${hex.slice(0,7)}">
+      <input class="ref" value="${val}" list="varlist" spellcheck="false">
+      <span class="kindtag">${tag}</span>
+    </div>`;
+  }
+  function wireCell(cell) {
+    const { tok, mode } = cell.dataset;
+    const color = cell.querySelector('input[type=color]');
+    const ref = cell.querySelector('input.ref');
+    const commit = (raw) => {
+      if (!EDITING) { refreshCell(cell, tok, mode); return; }
+      const v = raw.trim();
+      const before = { ...S[tok][mode] };
+      const beforeVal = before.kind === 'hex' ? before.hex.toUpperCase() : before.ref;
+      const beforeResolved = resolveEntry(before, mode);
+      let after;
+      if (isHex(v)) after = { kind: 'hex', hex: v.toLowerCase() };
+      else if (v.startsWith('--')) after = { kind: 'ref', ref: v };
+      else { refreshCell(cell, tok, mode); return; }   // invalid — revert view
+      S[tok][mode] = after;
+      applyStyle(); refreshCell(cell, tok, mode); markDirty();
+      refreshResolved();
+      const afterVal = after.kind === 'hex' ? after.hex.toUpperCase() : after.ref;
+      const afterResolved = resolveEntry(after, mode);
+      if (beforeVal !== afterVal) addLog({ scope: 'Semantic', name: tok, mode, oldValue: beforeVal, newValue: afterVal, oldResolved: beforeResolved, newResolved: afterResolved });
+    };
+    color.addEventListener('input', () => { if (EDITING) { S[tok][mode] = { kind: 'hex', hex: color.value }; applyStyle(); } });
+    color.addEventListener('change', () => commit(color.value));
+    ref.addEventListener('change', () => commit(ref.value));
+  }
+  function refreshCell(cell, tok, mode) {
+    const e = S[tok][mode];
+    cell.classList.toggle('ishex', e.kind === 'hex');
+    cell.classList.toggle('isref', e.kind !== 'hex');
+    cell.querySelector('input[type=color]').value = resolveEntry(e, mode).slice(0,7);
+    cell.querySelector('input.ref').value = e.kind === 'hex' ? e.hex.toUpperCase() : e.ref;
+    cell.querySelector('.kindtag').textContent = e.kind === 'hex' ? 'HEX' : (PVMAP[e.ref] != null ? 'REF' : 'SEM');
+  }
+  function refreshResolved() {
+    document.querySelectorAll('#panel-semantic .editcell').forEach(cell => {
+      const { tok, mode } = cell.dataset; const e = S[tok][mode];
+      cell.querySelector('input[type=color]').value = resolveEntry(e, mode).slice(0,7);
+    });
+  }
+  function refresh() { applyStyle(); buildVarlist(); renderPrimitives(); renderSemantic(); }
+
+  /* ============================ Toolbar ============================ */
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    document.documentElement.setAttribute('data-theme', tab.dataset.themeSet);
+    if (tab.dataset.tab === 'log') renderLog();
   }));
+
+  document.getElementById('toggleEdit').addEventListener('click', () => setEditing(!EDITING));
+
+  function buildTokensJson() {
+    const refOrHex = (e) => e.kind === 'hex' ? e.hex : `var(${e.ref})`;
+    const prim = primHexByVar();
+    const light = {}, dark = {};
+    for (const tok of Object.keys(S)) { light['--' + tok] = refOrHex(S[tok].light); dark['--' + tok] = refOrHex(S[tok].dark); }
+    return { $meta: { source: 'token-editor', note: 'Edited via design-system/index.html' }, primitives: prim, semantic: { light, dark } };
+  }
+  document.getElementById('export').onclick = () => {
+    const blob = new Blob([JSON.stringify(buildTokensJson(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tokens.json'; a.click();
+  };
+  document.getElementById('reset').onclick = () => { localStorage.removeItem(STORAGE); initState(); refresh(); document.getElementById('dirty').textContent = ''; };
+  document.getElementById('save').onclick = async () => {
+    const btn = document.getElementById('save'); const old = btn.textContent; btn.textContent = 'Đang lưu…';
+    try {
+      const res = await fetch('/api/save-tokens', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(buildTokensJson()) });
+      if (!res.ok) throw new Error(res.status + '');
+      btn.textContent = '✓ Đã lưu'; document.getElementById('dirty').textContent = '';
+    } catch (e) {
+      btn.textContent = '✗ Cần editor-server'; alert('Không lưu được vào file: cần chạy editor-server.mjs.\nDùng "Export tokens.json" để tải file về, hoặc chạy:\n  node design-system/editor-server.mjs\n(' + e.message + ')');
+    }
+    setTimeout(() => btn.textContent = old, 2200);
+  };
+
+  // ---- boot ----
+  loadLog();
+  const hadDraft = loadDraft(); if (!hadDraft) initState();
+  setEditing(false);
+  applyStyle(); buildVarlist(); renderPrimitives(); renderSemantic(); renderLogBadge();
+  if (hadDraft) document.getElementById('dirty').textContent = '● khôi phục bản nháp (localStorage)';
 </script>
 </body>
 </html>

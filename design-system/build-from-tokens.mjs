@@ -174,6 +174,25 @@ fs.writeFileSync(path.join(outDir, 'colors.js'), `// AUTO-GENERATED from Figma D
 fs.writeFileSync(path.join(outDir, 'colors.ts'),
   `// AUTO-GENERATED from Figma DTCG exports. Do not edit by hand.\n${jsBody.replace(/;\n$/, ' as const;\n')}\nexport type ColorMode = 'light' | 'dark';\n`);
 
+// tokens.json — the RUNTIME source. A page can fetch this and apply the CSS
+// variables at load (see tokens-runtime.js) so updating colors needs no rebuild.
+const primFlat = {};
+for (const [step, hex] of Object.entries(primitives.base)) primFlat[primVar('base', step)] = hex;
+for (const fams of Object.values(groups)) for (const fam of fams)
+  for (const [step, hex] of Object.entries(primitives[fam])) primFlat[primVar(fam, step)] = hex;
+const semMap = (mode) => {
+  const o = {};
+  for (const tokens of Object.values(semanticGroups))
+    for (const [t, m] of Object.entries(tokens)) { const r = aliasRef(m[mode]); if (r) o['--' + t] = r; }
+  return o;
+};
+const tokensJson = {
+  $meta: { source: 'Figma DTCG', note: 'Runtime token source — edit values here and the loader applies them without a rebuild.' },
+  primitives: primFlat,
+  semantic: { light: semMap('light'), dark: semMap('dark') },
+};
+fs.writeFileSync(path.join(outDir, 'tokens.json'), JSON.stringify(tokensJson, null, 2));
+
 const nFam = familyOrder.length;
 const nPrim = Object.values(primitives).reduce((a, s) => a + Object.keys(s).length, 0);
 const nSem = Object.values(semanticGroups).reduce((a, g) => a + Object.keys(g).length, 0);
@@ -181,4 +200,5 @@ const noDark = [];
 for (const [g, tks] of Object.entries(semanticGroups)) for (const [t, m] of Object.entries(tks)) if (!m.dark) noDark.push(`${g}/${t}`);
 console.log(`Primitives: ${nFam} families, ${nPrim} tokens`);
 console.log(`Semantic: ${nSem} tokens x {light,dark} across ${Object.keys(semanticGroups).length} groups`);
+console.log(`Wrote colors.css, colors.js, colors.ts, tokens.json`);
 if (noDark.length) console.log(`⚠ ${noDark.length} tokens missing dark value:`, noDark.slice(0, 8).join(', '));
