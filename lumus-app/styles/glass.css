@@ -1,0 +1,240 @@
+/* ============================================================================
+ * Lumus — Liquid Glass (iOS-flavoured)
+ *
+ * Two rules keep this honest:
+ *   1. Glass is ACHROMATIC. Colour behind it shows through; the material itself
+ *      is white or graphite alpha. Brand blue is reserved for primary intent.
+ *   2. Edges carry a specular highlight. That rim is what reads as "glass"
+ *      rather than "translucent panel".
+ *
+ * Theming follows the generated tokens: bare :root is light, then
+ * [data-theme="dark"] and prefers-color-scheme redefine only what changes.
+ * ========================================================================== */
+
+:root,
+:root[data-theme='light'] {
+  /* Material fills — neutral on purpose. */
+  --glass: rgba(255 255 255 / 0.6);
+  --glass-thin: rgba(255 255 255 / 0.4);
+  --glass-thick: rgba(255 255 255 / 0.82);
+  --glass-chrome: rgba(255 255 255 / 0.72);
+
+  /* Specular rim: bright where light lands, faint on the far edge. */
+  --glass-edge: rgba(255 255 255 / 0.95);
+  --glass-edge-far: rgba(255 255 255 / 0.3);
+  --glass-hairline: rgba(9 12 20 / 0.07);
+
+  --glass-inner:
+    inset 0 1px 1px rgba(255 255 255 / 0.75),
+    inset 0 -1px 1px rgba(255 255 255 / 0.28),
+    inset 1px 0 1px rgba(255 255 255 / 0.3),
+    inset -1px 0 1px rgba(255 255 255 / 0.3);
+  --glass-lift: 0 1px 2px rgba(9 12 20 / 0.05), 0 10px 28px rgba(9 12 20 / 0.09);
+  --glass-lift-sm: 0 1px 2px rgba(9 12 20 / 0.05), 0 4px 12px rgba(9 12 20 / 0.06);
+  --glass-lift-lg: 0 2px 4px rgba(9 12 20 / 0.06), 0 20px 50px rgba(9 12 20 / 0.14);
+
+  --glass-blur: 28px;
+  --glass-blur-chrome: 34px;
+  --glass-sat: 180%;
+
+  /* Page ground. Warm neutral, not blue. */
+  --canvas: #f4f4f5;
+  --canvas-deep: #ececee;
+  /* Exactly one brand-tinted bloom, sitting behind the mascot. */
+  --bloom-brand: rgba(27 94 228 / 0.16);
+  --bloom-neutral: rgba(9 12 20 / 0.05);
+
+  /* Radii — concentric, capsule-leaning. */
+  --r-chip: 999px;
+  --r-control: 14px;
+  --r-card: 22px;
+  --r-sheet: 28px;
+
+  /* Mascot artwork (from the supplied mark). */
+  --mascot-a1: #48dbfd;
+  --mascot-a2: #001cf8;
+  --mascot-b1: #35cafd;
+  --mascot-b2: #2fc6fd;
+  --mascot-c1: #019efd;
+  --mascot-c2: #0060fc;
+  --mascot-eye: #ffffff;
+  --mascot-eye-glow: #ddf6ff;
+  --mascot-pupil: #1a3a5c;
+}
+
+:root[data-theme='dark'] {
+  --glass: rgba(30 31 34 / 0.62);
+  --glass-thin: rgba(30 31 34 / 0.44);
+  --glass-thick: rgba(34 35 39 / 0.82);
+  --glass-chrome: rgba(24 25 28 / 0.7);
+
+  --glass-edge: rgba(255 255 255 / 0.34);
+  --glass-edge-far: rgba(255 255 255 / 0.08);
+  --glass-hairline: rgba(255 255 255 / 0.1);
+
+  --glass-inner:
+    inset 0 1px 1px rgba(255 255 255 / 0.14),
+    inset 0 -1px 1px rgba(0 0 0 / 0.3),
+    inset 1px 0 1px rgba(255 255 255 / 0.05),
+    inset -1px 0 1px rgba(255 255 255 / 0.05);
+  --glass-lift: 0 1px 2px rgba(0 0 0 / 0.4), 0 12px 30px rgba(0 0 0 / 0.45);
+  --glass-lift-sm: 0 1px 2px rgba(0 0 0 / 0.35), 0 5px 14px rgba(0 0 0 / 0.35);
+  --glass-lift-lg: 0 2px 6px rgba(0 0 0 / 0.45), 0 24px 60px rgba(0 0 0 / 0.55);
+
+  --canvas: #0b0b0d;
+  --canvas-deep: #131316;
+  --bloom-brand: rgba(72 126 234 / 0.2);
+  --bloom-neutral: rgba(255 255 255 / 0.04);
+
+  --mascot-pupil: #0d2036;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --glass: rgba(30 31 34 / 0.62);
+    --glass-thin: rgba(30 31 34 / 0.44);
+    --glass-thick: rgba(34 35 39 / 0.82);
+    --glass-chrome: rgba(24 25 28 / 0.7);
+
+    --glass-edge: rgba(255 255 255 / 0.34);
+    --glass-edge-far: rgba(255 255 255 / 0.08);
+    --glass-hairline: rgba(255 255 255 / 0.1);
+
+    --glass-inner:
+      inset 0 1px 1px rgba(255 255 255 / 0.14),
+      inset 0 -1px 1px rgba(0 0 0 / 0.3),
+      inset 1px 0 1px rgba(255 255 255 / 0.05),
+      inset -1px 0 1px rgba(255 255 255 / 0.05);
+    --glass-lift: 0 1px 2px rgba(0 0 0 / 0.4), 0 12px 30px rgba(0 0 0 / 0.45);
+    --glass-lift-sm: 0 1px 2px rgba(0 0 0 / 0.35), 0 5px 14px rgba(0 0 0 / 0.35);
+    --glass-lift-lg: 0 2px 6px rgba(0 0 0 / 0.45), 0 24px 60px rgba(0 0 0 / 0.55);
+
+    --canvas: #0b0b0d;
+    --canvas-deep: #131316;
+    --bloom-brand: rgba(72 126 234 / 0.2);
+    --bloom-neutral: rgba(255 255 255 / 0.04);
+
+    --mascot-pupil: #0d2036;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The material itself.
+ *
+ * `.lg` = liquid glass. Composed of three layers:
+ *   background   → the frosted fill
+ *   ::before     → 1px specular rim, drawn as a masked gradient border
+ *   ::after      → edge lensing: a second, tighter blur confined to the rim,
+ *                  which is what makes the boundary look refractive
+ * ------------------------------------------------------------------------- */
+
+.lg {
+  position: relative;
+  background-color: var(--glass);
+  border-radius: var(--r-card);
+  box-shadow: var(--glass-lift), var(--glass-inner);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  isolation: isolate;
+}
+
+.lg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    var(--glass-edge) 0%,
+    transparent 38%,
+    transparent 62%,
+    var(--glass-edge-far) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.lg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(5px) brightness(1.07);
+  backdrop-filter: blur(5px) brightness(1.07);
+  -webkit-mask: radial-gradient(
+    120% 120% at 50% 50%,
+    transparent 58%,
+    #000 84%
+  );
+  mask: radial-gradient(120% 120% at 50% 50%, transparent 58%, #000 84%);
+}
+
+.lg > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* Chrome surfaces (headers, tab bars) sit over scrolling content and need a
+   thicker, more opaque mix so text stays legible. */
+.lgChrome {
+  background-color: var(--glass-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-sat));
+}
+
+.lgThin {
+  background-color: var(--glass-thin);
+}
+
+.lgThick {
+  background-color: var(--glass-thick);
+}
+
+/* Interaction: the material yields, then springs back. */
+.lgPress {
+  transition:
+    transform 200ms cubic-bezier(0.32, 1.4, 0.6, 1),
+    filter 200ms ease;
+}
+
+.lgPress:active {
+  transform: scale(0.965);
+  filter: brightness(0.98);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+  }
+
+  .lg::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lg,
+  .lgChrome,
+  .lgThin,
+  .lgThick {
+    background-color: var(--bg-primary);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .lg::after {
+    display: none;
+  }
+}

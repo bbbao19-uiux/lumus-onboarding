@@ -1,0 +1,396 @@
+.root {
+  position: relative;
+  width: var(--mascot-size, 160px);
+  aspect-ratio: 161 / 144;
+  display: block;
+  border: 0;
+  padding: 0;
+  background: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  color: inherit;
+  line-height: 0;
+}
+
+.root[data-interactive='true'] {
+  cursor: pointer;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+
+/* --- Motion layers --------------------------------------------------------
+ * float  → idle bob
+ * react  → press squash, anger shake, happy hop (data-attribute driven)
+ * ------------------------------------------------------------------------ */
+
+.float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: float 4.6s ease-in-out infinite;
+}
+
+.react {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 240ms cubic-bezier(0.32, 1.5, 0.6, 1);
+}
+
+.root[data-pressed='true'] .react {
+  transform: scale(1.06, 0.9);
+}
+
+.root[data-mood='angry'] .react {
+  animation: shake 0.1s linear infinite;
+}
+
+.root[data-mood='happy'] .react {
+  animation: hop 0.6s cubic-bezier(0.32, 1.5, 0.6, 1) 2;
+}
+
+.root[data-mood='thinking'] .float,
+.root[data-mood='working'] .float {
+  animation-duration: 2.3s;
+}
+
+.root[data-mood='sleeping'] .float {
+  animation-duration: 7s;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(-2px, 0) rotate(-1.8deg);
+  }
+  50% {
+    transform: translate(2px, -1px) rotate(1.8deg);
+  }
+  100% {
+    transform: translate(-2px, 0) rotate(-1.8deg);
+  }
+}
+
+@keyframes hop {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  30% {
+    transform: translateY(-14px) scale(0.95, 1.07);
+  }
+  62% {
+    transform: translateY(0) scale(1.07, 0.93);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+/* --- Body ------------------------------------------------------------------ */
+
+.aura {
+  filter: blur(16px);
+  opacity: 0.5;
+  transition: opacity 420ms ease;
+}
+
+.root[data-mood='working'] .aura,
+.root[data-mood='thinking'] .aura {
+  opacity: 0.9;
+  animation: auraPulse 1.5s ease-in-out infinite;
+}
+
+.root[data-mood='angry'] .aura {
+  opacity: 1;
+}
+
+.root[data-mood='sleeping'] .aura {
+  opacity: 0.22;
+}
+
+@keyframes auraPulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* A moving specular streak, so the mark reads as glass rather than flat fill. */
+.sheen {
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  animation: sheen 5.5s ease-in-out infinite;
+}
+
+@keyframes sheen {
+  0%,
+  100% {
+    transform: translateX(-16px);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateX(16px);
+    opacity: 0.7;
+  }
+}
+
+.tint {
+  opacity: 0;
+  transition: opacity 300ms ease;
+  mix-blend-mode: color;
+}
+
+.root[data-mood='angry'] .tint {
+  opacity: 0.85;
+}
+
+/* --- Eyes ------------------------------------------------------------------ */
+
+.eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 260ms cubic-bezier(0.32, 1.4, 0.6, 1);
+  animation: blink 6.2s ease-in-out infinite;
+}
+
+.eyeRight {
+  animation-delay: 40ms;
+}
+
+@keyframes blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.06);
+  }
+}
+
+/* Squint while working: reads as concentration. A CSS animation outranks a
+   normal transform declaration, so the blink loop has to stop for this to show. */
+.root[data-mood='thinking'] .eye,
+.root[data-mood='working'] .eye {
+  transform: scaleY(0.74);
+  animation: none;
+}
+
+/* Eyes fully shut — no blink loop fighting the closed state. */
+.root[data-mood='shy'] .eye,
+.root[data-mood='sleeping'] .eye {
+  transform: scaleY(0.07);
+  animation: none;
+}
+
+.root[data-mood='happy'] .eye {
+  transform: scaleY(0.5) translateY(-2px);
+  animation: none;
+}
+
+.root[data-mood='angry'] .eye {
+  transform: scaleY(0.62) translateY(3px);
+  animation: none;
+}
+
+.pupils {
+  transition: opacity 200ms ease;
+}
+
+.root[data-mood='shy'] .pupils,
+.root[data-mood='sleeping'] .pupils {
+  opacity: 0;
+}
+
+/* Curved lids that appear when the eyes are shut, so a closed eye still has
+   a readable shape instead of being a bare rectangle. */
+.lids {
+  fill: none;
+  stroke: var(--mascot-pupil);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.root[data-mood='sleeping'] .lids,
+.root[data-mood='shy'] .lids {
+  opacity: 0.85;
+}
+
+.brows {
+  opacity: 0;
+  stroke: var(--mascot-pupil);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  fill: none;
+  transition: opacity 200ms ease;
+}
+
+.root[data-mood='angry'] .brows {
+  opacity: 1;
+}
+
+/* --- Shutters: the "covers its eyes" gesture ------------------------------
+ * No arms on this mark, so two capsules in the body gradient slide inward
+ * over the eyes. Same radius language as the eyes themselves.
+ * ----------------------------------------------------------------------- */
+
+.shutter {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 420ms cubic-bezier(0.3, 1.45, 0.6, 1), opacity 240ms ease;
+  opacity: 0;
+}
+
+.shutterLeft {
+  transform: translate(-26px, 20px) scale(0.6) rotate(-22deg);
+}
+
+.shutterRight {
+  transform: translate(26px, 20px) scale(0.6) rotate(22deg);
+}
+
+.root[data-mood='shy'] .shutter {
+  opacity: 1;
+  transform: translate(0, 0) scale(1) rotate(0deg);
+}
+
+/* --- Thinking orbit ------------------------------------------------------- */
+
+.orbit {
+  opacity: 0;
+  transition: opacity 240ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.root[data-mood='thinking'] .orbit,
+.root[data-mood='working'] .orbit {
+  opacity: 1;
+  animation: orbit 1.5s linear infinite;
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.orbitDot {
+  fill: var(--tool-accent, var(--color-brand-500));
+}
+
+/* --- Anger steam ---------------------------------------------------------- */
+
+.steam {
+  opacity: 0;
+  fill: #f97066;
+}
+
+.root[data-mood='angry'] .steam {
+  animation: steam 1.05s ease-out infinite;
+}
+
+.root[data-mood='angry'] .steam:nth-of-type(2) {
+  animation-delay: 0.3s;
+}
+
+.root[data-mood='angry'] .steam:nth-of-type(3) {
+  animation-delay: 0.62s;
+}
+
+@keyframes steam {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  30% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(1.3);
+  }
+}
+
+/* --- Sleep zzz ----------------------------------------------------------- */
+
+.zzz {
+  opacity: 0;
+  fill: var(--text-quaternary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.root[data-mood='sleeping'] .zzz {
+  animation: zzz 2.4s ease-out infinite;
+}
+
+.root[data-mood='sleeping'] .zzz:nth-of-type(2) {
+  animation-delay: 0.8s;
+}
+
+@keyframes zzz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -22px) scale(1.15);
+  }
+}
+
+/* --- Speech bubble -------------------------------------------------------- */
+
+.bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  max-width: min(70vw, 230px);
+  width: max-content;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  text-align: left;
+  color: var(--text-primary);
+  background-color: var(--glass-thick);
+  box-shadow: var(--glass-lift-sm), var(--glass-inner);
+  -webkit-backdrop-filter: blur(20px) saturate(var(--glass-sat));
+  backdrop-filter: blur(20px) saturate(var(--glass-sat));
+  pointer-events: none;
+  z-index: 4;
+  animation: bubbleIn 280ms cubic-bezier(0.32, 1.5, 0.6, 1);
+}
+
+.bubble[data-align='center'] {
+  right: 50%;
+  translate: 50% 0;
+  text-align: center;
+}
+
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+}

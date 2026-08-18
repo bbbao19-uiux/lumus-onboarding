@@ -1,0 +1,186 @@
+.page {
+  display: grid;
+  gap: 12px;
+}
+
+.title {
+  font-size: 23px;
+  letter-spacing: -0.03em;
+  padding-inline: 2px;
+}
+
+.subtitle {
+  margin-top: 5px;
+  padding-inline: 2px;
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.countChip {
+  margin-top: 12px;
+  padding-inline: 2px;
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  transition: box-shadow 280ms ease;
+}
+
+/* While connecting, the tool's own colour takes over the card edge. */
+.card[data-connecting='true'] {
+  box-shadow:
+    var(--glass-lift),
+    var(--glass-inner),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--tool-accent) 55%, transparent);
+}
+
+.card[data-connecting='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 90% at 50% 0%,
+    color-mix(in srgb, var(--tool-accent) 16%, transparent),
+    transparent 68%
+  );
+  animation: sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: var(--tool-accent);
+  background-color: var(--tool-accent-soft);
+}
+
+.name {
+  display: block;
+  font-size: 15px;
+  font-weight: 660;
+  letter-spacing: -0.016em;
+}
+
+.account {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-quaternary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desc {
+  font-size: 13.5px;
+  line-height: 1.48;
+  color: var(--text-tertiary);
+}
+
+.scopeTitle {
+  margin-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+.scopes {
+  display: grid;
+  gap: 5px;
+  padding: 0;
+  list-style: none;
+}
+
+.scope {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.scopeTick {
+  margin-top: 2px;
+  color: var(--fg-success-primary);
+}
+
+.scopeOff {
+  color: var(--text-quaternary);
+}
+
+.scopeOff .scopeTick {
+  color: var(--text-quaternary);
+  opacity: 0.6;
+}
+
+.footRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 11px;
+  border-top: 1px solid var(--glass-hairline);
+}
+
+.sync {
+  font-size: 11.5px;
+  color: var(--text-quaternary);
+}
+
+.handshake {
+  font-size: 12px;
+  font-weight: 640;
+  color: var(--tool-accent);
+}
+
+.footSpacer {
+  flex: 1;
+}
+
+.note {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 13px 14px;
+  border-radius: var(--r-control);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+  background-color: var(--bg-tertiary);
+}
+
+.noteIcon {
+  margin-top: 1px;
+  color: var(--text-tertiary);
+}

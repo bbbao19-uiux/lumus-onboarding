@@ -1,0 +1,35 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 60;
+  overflow: visible;
+}
+
+.halo {
+  fill: none;
+  stroke-width: 10;
+  opacity: 0.18;
+  filter: blur(7px);
+}
+
+.core {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 10 14;
+  opacity: 0.85;
+  animation: flow 0.7s linear infinite;
+}
+
+.spark {
+  filter: drop-shadow(0 0 7px currentColor);
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}

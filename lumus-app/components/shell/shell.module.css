@@ -1,0 +1,252 @@
+/* Mobile shell: sticky glass header, scrolling column, floating tab bar. */
+
+.shell {
+  --header-h: 58px;
+  --tabbar-h: 62px;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.shell[data-fill='true'] {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--header-h);
+  padding: max(8px, env(safe-area-inset-top)) 16px 8px;
+  background-color: var(--glass-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-sat));
+}
+
+/* Hairline instead of a border, so the chrome reads as a lens edge. */
+.header::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--glass-hairline);
+}
+
+.headTitle {
+  font-size: 17px;
+  font-weight: 660;
+  letter-spacing: -0.022em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headSub {
+  font-size: 11.5px;
+  color: var(--text-quaternary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headTrail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mascotSlot {
+  position: relative;
+  flex: none;
+}
+
+/* --- Content --------------------------------------------------------------- */
+
+.content {
+  min-width: 0;
+  min-height: 0;
+  padding: 14px 16px calc(var(--tabbar-h) + 26px + env(safe-area-inset-bottom));
+}
+
+.shell[data-fill='true'] .content {
+  overflow: hidden;
+  padding-bottom: calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom));
+}
+
+/* --- Tab bar --------------------------------------------------------------- */
+
+.tabbarWrap {
+  position: fixed;
+  left: 50%;
+  translate: -50% 0;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 40;
+  width: min(calc(100vw - 28px), 432px);
+  pointer-events: none;
+}
+
+.tabbar {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 6px;
+  border-radius: var(--r-chip);
+  pointer-events: auto;
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: 6px 4px;
+  border-radius: var(--r-chip);
+  color: var(--text-quaternary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: -0.005em;
+  transition: color 200ms ease, background-color 240ms ease;
+}
+
+.tab[data-active='true'] {
+  color: var(--color-brand-600);
+  background-color: var(--color-brand-50);
+}
+
+:root[data-theme='dark'] .tab[data-active='true'] {
+  color: var(--color-brand-300);
+  background-color: rgba(27 94 228 / 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tab[data-active='true'] {
+    color: var(--color-brand-300);
+    background-color: rgba(27 94 228 / 0.22);
+  }
+}
+
+.tabIcon {
+  width: 21px;
+  height: 21px;
+}
+
+/* --- Settings sheet ------------------------------------------------------- */
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--r-chip);
+  color: var(--text-secondary);
+  background-color: var(--glass-thin);
+  box-shadow: var(--glass-inner);
+  -webkit-backdrop-filter: blur(18px) saturate(var(--glass-sat));
+  backdrop-filter: blur(18px) saturate(var(--glass-sat));
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(9 12 20 / 0.32);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: fade 200ms ease;
+  border: 0;
+  width: 100%;
+}
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  translate: -50% 0;
+  bottom: 0;
+  z-index: 61;
+  width: min(100vw, 460px);
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  animation: rise 320ms cubic-bezier(0.32, 1.2, 0.6, 1);
+}
+
+.grabber {
+  width: 38px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--text-quaternary);
+  opacity: 0.4;
+  margin: 2px auto 16px;
+}
+
+.sheetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.sheetRow + .sheetRow {
+  border-top: 1px solid var(--glass-hairline);
+}
+
+.sheetLabel {
+  font-size: 14.5px;
+  font-weight: 570;
+}
+
+.sheetUser {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 0 14px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-chip);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+}
+
+.userName {
+  font-size: 15px;
+  font-weight: 640;
+  line-height: 1.25;
+}
+
+.userMail {
+  font-size: 12.5px;
+  color: var(--text-quaternary);
+  line-height: 1.25;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(100%);
+  }
+}
